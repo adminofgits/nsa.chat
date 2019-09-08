@@ -1,0 +1,6 @@
+[submodule "payloads/presentation_clickers"]
+	path = payloads/presentation_clickers
+	url = https://github.com/marcnewlin/presentation-clickers.git
+[submodule "SigThief"]
+	path = SigThief
+	url = https://github.com/secretsquirrel/SigThief.git

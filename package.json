@@ -1,0 +1,31 @@
+{
+  "name": "nsa.chat",
+  "version": "86.0.1",
+  "description": "nsa.chat",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "website": "https://nsa.chat",
+  "keywords": [
+    "chat"
+  ],
+  "author": "Nickle Slacker Army",
+  "license": "WTFPL",
+  "devDependencies": {
+    "electron": "^6.0.4",
+    "electron-builder": "^21.2.0",
+    "electron-packager": "^14.0.4"
+  },
+  "dependencies": {
+    "jimp": "^0.6.4",
+    "wallpaper": "^4.4.1",
+    "baffle": "^0.3.6"
+  },
+  "build": {
+    "appId": "666"
+  }
+}
