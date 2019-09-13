@@ -2,7 +2,7 @@
 
 import os
 dirname = os.path.dirname(__file__)
-dirname = "/home/karl/Downloads/electron-quick-start/payloads"
+# dirname = "/home/karl/Downloads/electron-quick-start/payloads"
 filename = os.path.join(dirname, 'presentation_clickers','tools')
 print(filename)
 
@@ -15,6 +15,8 @@ from logichat.commands import *
 common.init_args('./nrf24-scanner.py')
 common.parser.add_argument('-a', '--address', type=str, help='Target address')
 common.parser.add_argument('-f', '--family', required=True, type=Protocols, choices=list(Protocols), help='Protocol family')
+common.parser.add_argument('-c', '--command', required=True, type=Commands, choices=list(Commands), help='Commands to run: {Commands}')
+common.parser.add_argument('-m', '--message', type=str, help='Message to send')
 common.parse_and_init()
 
 # Parse the address
@@ -49,15 +51,10 @@ if common.args.family == Protocols.LogitechEncrypted:
     raise Exception('Invalid address: {0}'.format(common.args.address))  
   p = Logitech(address, encrypted=True)
 
-"""# Initialize the injector instance
-i = Injector(p)
-
-# Inject some sample strings
-i.start_injection()
-i.send_left()
-i.send_right()
-i.send_left()
-i.send_right()
-i.stop_injection()
-"""
-windowslock(p)
+if common.args.command == Commands.chat:
+  if not common.args.message:
+    raise Exception('Message required for chat command')
+    
+  chat(p, common.args.message)
+else:
+  raise Exception('Unknown command')
