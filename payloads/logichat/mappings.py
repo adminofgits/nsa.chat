@@ -90,7 +90,7 @@ class Injector(object):
     self.protocol.send_hid_event(scan_code=0x0f, shift=shift, ctrl=ctrl, win=win)
     self.protocol.send_hid_event(scan_code=0x00)
 
-  def send_admin_sequence(self, shift=False, ctrl=False, win=True):
+  def send_admin_sequence(self, shift=False, ctrl=False, win=False):
     # 0x73 == F25
     self.protocol.send_hid_event(scan_code=0x73, shift=shift, ctrl=ctrl, win=win)
     self.protocol.send_hid_event(scan_code=0x00)

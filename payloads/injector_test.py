@@ -15,7 +15,7 @@ from logichat.commands import *
 common.init_args('./nrf24-scanner.py')
 common.parser.add_argument('-a', '--address', type=str, help='Target address')
 common.parser.add_argument('-f', '--family', required=True, type=Protocols, choices=list(Protocols), help='Protocol family')
-common.parser.add_argument('-c', '--command', required=True, type=Commands, choices=list(Commands), help='Commands to run: {Commands}')
+common.parser.add_argument('-z', '--command', required=True, type=Commands, choices=list(Commands), help='Commands to run: {Commands}')
 common.parser.add_argument('-m', '--message', type=str, help='Message to send')
 common.parse_and_init()
 
@@ -56,5 +56,9 @@ if common.args.command == Commands.chat:
     raise Exception('Message required for chat command')
     
   chat(p, common.args.message)
+
+elif common.args.command == Commands.windowsstart:
+   windowsstart(p)
+
 else:
   raise Exception('Unknown command')

