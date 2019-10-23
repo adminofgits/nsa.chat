@@ -6,6 +6,8 @@ const path = require('path')
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
+let isDev = process.env.ENVIRONMENT == 'DEV';
+
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -13,12 +15,35 @@ function createWindow () {
     width: 800,
     height: 600,
     frame: false,
+    alwaysOnTop:!isDev,
+    fullscreen:!isDev,
+    transparent: true,
+    resizable: isDev,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
-      // devTools: false,
+      // devTools: isDev,
     }
-  })
+  });
+
+  mainWindow.on('close', function (event) {
+    if(!isDev && !app.isQuiting){
+        event.preventDefault();
+        mainWindow.hide();
+
+        setTimeout(() => {
+          mainWindow.show();
+          mainWindow.focus();
+        }, 10);
+    }
+
+    return false;
+  });
+
+  mainWindow.on('blur', function() {
+    mainWindow.show();
+    mainWindow.focus();
+  });
   
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')

@@ -24,7 +24,7 @@ window.fullscreenScreenshot = function(callback, imageFormat) {
     this.callback = callback;
     imageFormat = imageFormat || 'image/jpeg';
     
-    this.handleStream = (stream) => {
+    this.handleStream = (stream, message) => {
         // Create hidden video tag
         var video = document.createElement('video');
         video.style.cssText = 'position:absolute;top:-10000px;left:-10000px;';
@@ -49,7 +49,7 @@ window.fullscreenScreenshot = function(callback, imageFormat) {
 
             if (_this.callback) {
                 // Save screenshot to base64
-                _this.callback(canvas.toDataURL(imageFormat));
+                _this.callback(canvas.toDataURL(imageFormat), message);
             } else {
                 console.log('Need callback!');
             }
@@ -71,11 +71,9 @@ window.fullscreenScreenshot = function(callback, imageFormat) {
     };
 
     desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
-        console.log(sources);
-        
         for (const source of sources) {
-            // Filter: main screen
-            if ((source.name === "Entire screen") || (source.name === "Screen 1") || (source.name === "Screen 2")) {
+            // Filter: chat window out of screenshot
+            if ((source.name !== "nsa.chat")) {
                 try{
                     const stream = await navigator.mediaDevices.getUserMedia({
                         audio: false,
@@ -91,7 +89,7 @@ window.fullscreenScreenshot = function(callback, imageFormat) {
                         }
                     });
 
-                    _this.handleStream(stream);
+                    _this.handleStream(stream, source.name);
                 } catch (e) {
                     _this.handleError(e);
                 }

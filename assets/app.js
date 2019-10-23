@@ -73,6 +73,10 @@ function getChatUser(isFromAdmin){
     let username = process.env.username || process.env.user;
     if(isFromAdmin){
         username = $('#handle').val();
+
+        if(!username) {
+            username = 'anon'
+        }
     }
     return '[' + username + ']: ';
 }
@@ -370,11 +374,12 @@ $(".demo").on("click", "#screenshot", function(e){
 });
 
 $('body').on('screenshot.full', function(){
-    fullscreenScreenshot(function(base64data){
+    fullscreenScreenshot(function(base64data, title){
         // Draw image in the img tag
-        var messageElement = $('<img>').addClass('image').attr('src', base64data);
+        var titleElement = $('<span>').addClass('title').text(title).append($('<br>'));
+        var imageElement = $('<img>').addClass('image').attr('src', base64data);
         var userElement = $('<span>').addClass('user').text(getChatUser(true));
-        var messageLogElement = $('<li>').append([userElement, messageElement]);
+        var messageLogElement = $('<li>').append([userElement, titleElement, imageElement]);
         $('#messages').append(messageLogElement);
         $('#messages').trigger('messages.load');
     },'image/png');
