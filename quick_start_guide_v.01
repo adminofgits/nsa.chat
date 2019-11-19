@@ -84,8 +84,11 @@ Traceback (most recent call last):
     raise USBError(_strerror(ret), ret, _libusb_errno[ret])
 usb.core.USBError: [Errno 110] Operation timed out
 
-Unplug the Crazy Radio and plug it back in and run script again 
-
+You can stop this error from occuring if you edit presentation-clickers-master -> tools -> lib -> nrf24.py
+Insert a new line at line 67 and insert "self.dongle.reset()" so the code looks like this:
+self.dongle = (list(usb.core.find( ...))[index]
+self.dongle.reset()
+self.dongle.set_configuration()
 
 Rickroll
 # Inject some sample strings
