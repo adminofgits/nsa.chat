@@ -16,7 +16,7 @@
   "author": "Nickle Slacker Army",
   "license": "WTFPL",
   "devDependencies": {
-    "electron": "^6.0.4",
+    "electron": "^15.5.5",
     "electron-builder": "^21.2.0",
     "electron-packager": "^14.0.4"
   },
